@@ -31,5 +31,6 @@
     </style>
 
 
+    <style name="AlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert" />
 
 </resources>

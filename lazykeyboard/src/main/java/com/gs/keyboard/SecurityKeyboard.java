@@ -1,10 +1,8 @@
 package com.gs.keyboard;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.Keyboard.Key;
 import android.inputmethodservice.KeyboardView;
@@ -15,14 +13,14 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -41,7 +39,7 @@ import java.util.Random;
  * @author yidong (onlyloveyd@gmaol.com)
  * @date 2018/6/22 07:45
  */
-public class SecurityKeyboard extends PopupWindow {
+public class SecurityKeyboard extends Dialog {
 
     private KeyboardView keyboardView;
 
@@ -79,7 +77,7 @@ public class SecurityKeyboard extends PopupWindow {
 
     @SuppressLint("ClickableViewAccessibility")
     public SecurityKeyboard(final AppCompatEditText appCompatEditText, SecurityConfigure securityConfigure) {
-        super(appCompatEditText.getContext());
+        super(appCompatEditText.getContext(), R.style.PopupKeybroadWindow);
         if (securityConfigure == null) {
             configuration = new SecurityConfigure();
             int inputType = appCompatEditText.getInputType();
@@ -107,17 +105,19 @@ public class SecurityKeyboard extends PopupWindow {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mMainView = inflater.inflate(R.layout.gs_keyboard, null);
+        mMainView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        Window window = getWindow();
+        window.setGravity(Gravity.BOTTOM);
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.width = LayoutParams.MATCH_PARENT;
+        lp.height = LayoutParams.WRAP_CONTENT;
+        lp.gravity = (Gravity.BOTTOM);
+        getWindow().setAttributes(lp);
+        getWindow().getDecorView().setPadding(0, 0, 0, 0);//默认就算是MATCH_PARENT也会填不满，有padding
+
         this.setContentView(mMainView);
-        this.setWidth(DisplayUtils.getScreenWidth(mContext));
-        this.setHeight(LayoutParams.WRAP_CONTENT);
-        ColorDrawable dw = new ColorDrawable(Color.parseColor("#00000000"));
-        // 设置SelectPicPopupWindow弹出窗体的背景
-        this.setBackgroundDrawable(dw);
 
-
-        this.setPopupWindowTouchModal(this, false);
-
-        this.setAnimationStyle(R.style.PopupKeybroad);
+        getWindow().setWindowAnimations(R.style.PopupKeybroad);
         if (DisplayUtils.dp2px(mContext, 236) > (int) (DisplayUtils
                 .getScreenHeight(mContext) * 3.0f / 5.0f)) {
             mKeyboardLetter = new Keyboard(mContext,
@@ -131,7 +131,6 @@ public class SecurityKeyboard extends PopupWindow {
             mKeyboardSymbol = new Keyboard(mContext,
                     R.xml.gs_keyboard_symbols_shift);
         }
-
 
 
         keyboardView = mMainView
@@ -175,7 +174,7 @@ public class SecurityKeyboard extends PopupWindow {
         keyboardView.setEnabled(true);
         keyboardView.setPreviewEnabled(false);
         keyboardView.setOnKeyboardActionListener(listener);
-        tvNumber.setOnClickListener(new OnClickListener() {
+        tvNumber.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
@@ -186,7 +185,7 @@ public class SecurityKeyboard extends PopupWindow {
                 keyboardView.setKeyboard(mKeyboardNumber);
             }
         });
-        tvLetter.setOnClickListener(new OnClickListener() {
+        tvLetter.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
@@ -196,7 +195,7 @@ public class SecurityKeyboard extends PopupWindow {
                 keyboardView.setKeyboard(mKeyboardLetter);
             }
         });
-        tvSymbol.setOnClickListener(new OnClickListener() {
+        tvSymbol.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
@@ -224,7 +223,8 @@ public class SecurityKeyboard extends PopupWindow {
             }
         });
 
-        this.setFocusable(false);//不要焦点，避免点击其他的输入框时需要点击两次才能弹出输入法
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 //        this.setOutsideTouchable(true);//不要使用这个避免多次点击输入框会多次关闭显示软键盘
 
         appCompatEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -429,38 +429,7 @@ public class SecurityKeyboard extends PopupWindow {
         if (isShowing()) {
             return;
         }
-        int[] location = new int[2];
-        appCompatEditText.getLocationInWindow(location);
-        int appCompatEditTextBottomY = location[1] + appCompatEditText.getHeight();
-
-        Point size = new Point();
-        appCompatEditText.getDisplay().getSize(size);
-        int activityHeight = size.y;
-
-        int popupWindowHeight = dipToPX(view.getContext(), 254);
-
-        final int offY = activityHeight - appCompatEditTextBottomY - popupWindowHeight;
-
-        //为了处理其他的输入框点击过，导致界面刷新，再点击安全软键盘后界面还没有刷新结束，这时候显示软键盘位置会错乱的问题，解决办法就是等UI刷新完成后再显示软键盘。
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-
-                //使用showAsDropDown替换之前的showLocation是因为在导航栏透明后，使用showLocation显示位置不正确，故而换成showAsDropDown
-                ((SecurityEditText) appCompatEditText).getSecurityKeyboard().showAsDropDown(appCompatEditText, 0, offY);
-                Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.push_bottom_in);
-                animation.setDuration(150);
-                getContentView().setAnimation(animation);
-            }
-        }, 50);
-
-
-//        ((SecurityEditText) appCompatEditText).getSecurityKeyboard().showAsDropDown(appCompatEditText, 0, offY);
-//
-//
-//        Log.e("xxx", "edit:" + location[1]+" activityHeight:"+activityHeight+" offY:"+offY);
-//        Animation animation = AnimationUtils.loadAnimation(mContext, R.anim.push_bottom_in);
-//        getContentView().setAnimation(animation);
+        show();
     }
 
     /**

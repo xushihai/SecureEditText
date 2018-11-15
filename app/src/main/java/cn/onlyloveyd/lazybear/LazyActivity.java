@@ -5,9 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 
-import com.gs.keyboard.KeyboardType;
-import com.gs.keyboard.SecurityConfigure;
-import com.gs.keyboard.SecurityEditText;
 import com.gs.keyboard.SecurityKeyboard;
 
 public class LazyActivity extends AppCompatActivity {
