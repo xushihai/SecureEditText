@@ -133,14 +133,13 @@ public class SecurityKeyboard extends Dialog {
         }
 
 
-        keyboardView = mMainView
-                .findViewById(R.id.keyboard_view);
-        keyboardViewLy = mMainView.findViewById(R.id.keyboard_view_ly);
+        keyboardView = (KeyboardView) mMainView.findViewById(R.id.keyboard_view);
+        keyboardViewLy = (RelativeLayout) mMainView.findViewById(R.id.keyboard_view_ly);
 
 
-        tvSymbol = mMainView.findViewById(R.id.tv_symbol);
-        tvLetter = mMainView.findViewById(R.id.tv_letter);
-        tvNumber = mMainView.findViewById(R.id.tv_number);
+        tvSymbol = (TextView) mMainView.findViewById(R.id.tv_symbol);
+        tvLetter = (TextView) mMainView.findViewById(R.id.tv_letter);
+        tvNumber = (TextView) mMainView.findViewById(R.id.tv_number);
 
         if (!configuration.isLetterEnabled()) {
             tvLetter.setVisibility(View.GONE);
