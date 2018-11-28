@@ -75,6 +75,11 @@ public class SecurityKeyboard extends Dialog {
     private Context mContext;
     Handler mHandler = new Handler();
 
+
+    public int getHeight(){
+        return DisplayUtils.dp2px(mContext, 236);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     public SecurityKeyboard(final AppCompatEditText appCompatEditText, SecurityConfigure securityConfigure) {
         super(appCompatEditText.getContext(), R.style.PopupKeybroadWindow);
@@ -105,20 +110,23 @@ public class SecurityKeyboard extends Dialog {
         LayoutInflater inflater = (LayoutInflater) mContext
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         mMainView = inflater.inflate(R.layout.gs_keyboard, null);
-        mMainView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mMainView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, getHeight()));
+//        mMainView.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        getWindow().getDecorView().setPadding(0, 0, 0, 0);//默认就算是MATCH_PARENT也会填不满，有padding
         Window window = getWindow();
-        window.setGravity(Gravity.BOTTOM);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.width = LayoutParams.MATCH_PARENT;
-        lp.height = LayoutParams.WRAP_CONTENT;
+
+        //原本高度设置为WRAP_CONTENT就没问题，但是在荣耀手机上面发现高度并不是包裹，多出一截，非常不好看，只有设置为固定值才行，用内容高度的时候又少显示了一截，固加上一段高度，在其他手机上显示没问题
+        lp.height = getHeight()+DisplayUtils.dp2px(mContext, 16);
         lp.gravity = (Gravity.BOTTOM);
         getWindow().setAttributes(lp);
-        getWindow().getDecorView().setPadding(0, 0, 0, 0);//默认就算是MATCH_PARENT也会填不满，有padding
+
 
         this.setContentView(mMainView);
 
         getWindow().setWindowAnimations(R.style.PopupKeybroad);
-        if (DisplayUtils.dp2px(mContext, 236) > (int) (DisplayUtils
+        if (getHeight()> (int) (DisplayUtils
                 .getScreenHeight(mContext) * 3.0f / 5.0f)) {
             mKeyboardLetter = new Keyboard(mContext,
                     R.xml.gs_keyboard_english_land);
@@ -425,9 +433,9 @@ public class SecurityKeyboard extends Dialog {
      * @param view
      */
     private void showKeyboard(View view) {
-        if (isShowing()) {
-            return;
-        }
+//        if (isShowing()) {
+//            return;
+//        }
         show();
     }
 
@@ -435,7 +443,8 @@ public class SecurityKeyboard extends Dialog {
      * 隐藏键盘
      */
     private void hideKeyboard() {
-        this.dismiss();
+        hide();
+//        this.dismiss();
     }
 
     private boolean isLetter(String str) {

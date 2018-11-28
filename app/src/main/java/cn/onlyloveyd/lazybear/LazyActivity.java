@@ -21,4 +21,6 @@ public class LazyActivity extends AppCompatActivity {
 //                .setDefaultKeyboardType(KeyboardType.LETTER);
 //        ((SecurityEditText) findViewById(R.id.login_input_password)).setSecurityConfigure(configure);
     }
+
+
 }
